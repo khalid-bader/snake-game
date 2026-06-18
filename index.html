@@ -7,66 +7,140 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: #0f0f1a;
+    background: linear-gradient(135deg, #faf8f3 0%, #f5f0e8 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    font-family: 'Segoe UI', sans-serif;
-    color: #fff;
+    min-height: 100vh;
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    color: #5a4a42;
     user-select: none;
+    padding: 20px;
   }
   h1 {
-    font-size: 2rem;
-    margin-bottom: 12px;
-    color: #4ade80;
-    letter-spacing: 2px;
-    text-shadow: 0 0 20px #4ade8088;
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+    color: #c8a97e;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  #game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 600px;
   }
   #score-board {
     display: flex;
-    gap: 40px;
-    margin-bottom: 16px;
+    gap: 30px;
     font-size: 1rem;
-    color: #94a3b8;
+    color: #9d8b7e;
+    justify-content: center;
+    width: 100%;
   }
-  #score-board span { color: #f8fafc; font-weight: 700; font-size: 1.2rem; }
+  #score-board span { color: #c8a97e; font-weight: 700; font-size: 1.3rem; }
+  #canvas-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   canvas {
-    border: 2px solid #4ade8044;
-    border-radius: 8px;
-    box-shadow: 0 0 40px #4ade8022;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05);
+    background: #fffcf9;
+    display: block;
   }
   #overlay {
     position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 16px;
+    background: rgba(250, 248, 243, 0.85);
+    backdrop-filter: blur(4px);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
   }
-  #overlay h2 { font-size: 2rem; color: #f87171; text-shadow: 0 0 20px #f8717188; }
-  #overlay p { color: #94a3b8; font-size: 1rem; }
   #overlay.hidden { display: none; }
-  #hint { margin-top: 10px; color: #64748b; font-size: 0.85rem; }
+  #overlay h2 { font-size: 2rem; color: #d4846d; margin-bottom: 10px; }
+  #overlay p { color: #9d8b7e; font-size: 0.95rem; line-height: 1.6; }
+  .level-select {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .level-btn {
+    padding: 10px 20px;
+    border: 2px solid #d4b5a0;
+    background: #fff5f0;
+    color: #c8a97e;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .level-btn:hover {
+    background: #fce4da;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(200, 169, 126, 0.2);
+  }
+  .level-btn.selected {
+    background: #c8a97e;
+    color: #fff;
+    border-color: #c8a97e;
+  }
+  .hint {
+    margin-top: 12px;
+    color: #c8a97e;
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 1.8rem; }
+    #score-board { gap: 20px; font-size: 0.9rem; }
+    #score-board span { font-size: 1.1rem; }
+    #overlay h2 { font-size: 1.6rem; }
+    #overlay p { font-size: 0.9rem; }
+    .level-btn { padding: 8px 16px; font-size: 0.9rem; }
+  }
 </style>
 </head>
 <body>
-<h1>🐍 لعبة الثعبان</h1>
-<div id="score-board">
-  النقاط: <span id="score">0</span>
-  &nbsp;&nbsp;|&nbsp;&nbsp;
-  أعلى نقطة: <span id="best">0</span>
-</div>
-<div style="position:relative">
-  <canvas id="c" width="500" height="500"></canvas>
-  <div id="overlay">
-    <h2 id="overlay-title">ابدأ اللعبة</h2>
-    <p>استخدم أسهم لوحة المفاتيح للتحكم</p>
-    <p>اضغط <b>Space</b> أو <b>Enter</b> للبدء</p>
+<h1>🐍 الثعبان</h1>
+<div id="game-container">
+  <div id="score-board">
+    النقاط: <span id="score">0</span>
+    <span style="color: #d4b5a0;">|</span>
+    أفضل: <span id="best">0</span>
+  </div>
+  <div id="canvas-wrapper">
+    <canvas id="c"></canvas>
+    <div id="overlay">
+      <h2 id="overlay-title">اختر مستوى الصعوبة</h2>
+      <div class="level-select" id="level-select">
+        <button class="level-btn" data-level="easy">سهل</button>
+        <button class="level-btn" data-level="medium">متوسط</button>
+        <button class="level-btn" data-level="hard">صعب</button>
+      </div>
+      <p class="hint">اضغط على المستوى أو Space للبدء</p>
+    </div>
   </div>
 </div>
-<p id="hint">WASD أو الأسهم للتحرك</p>
 
 <script>
 const canvas = document.getElementById('c');
@@ -75,13 +149,36 @@ const scoreEl = document.getElementById('score');
 const bestEl = document.getElementById('best');
 const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
+const levelSelect = document.getElementById('level-select');
 
-const CELL = 25;
-const COLS = 20;
-const ROWS = 20;
-const BASE_SPEED = 150;
+const LEVELS = {
+  easy: { speed: 200, maxSpeed: 100 },
+  medium: { speed: 150, maxSpeed: 70 },
+  hard: { speed: 100, maxSpeed: 40 }
+};
 
-let snake, dir, nextDir, apple, score, best, running, lastTime, speed;
+const COLORS = {
+  bg: '#fffcf9',
+  grid: '#f0e6dd',
+  snakeHead: '#b8e6c4',
+  snakeTail: '#6bb896',
+  apple: '#f5a8a0',
+  appleDark: '#d4846d'
+};
+
+let snake, dir, nextDir, apple, score, best, running, lastTime, speed, maxSpeed, currentLevel;
+let CELL = 25, COLS = 20, ROWS = 20;
+
+function resizeCanvas() {
+  const wrapper = document.getElementById('canvas-wrapper');
+  const size = Math.min(wrapper.clientWidth, wrapper.clientHeight);
+  canvas.width = size;
+  canvas.height = size;
+  CELL = size / COLS;
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 function rand(max) { return Math.floor(Math.random() * max); }
 
@@ -93,7 +190,12 @@ function newApple() {
   return pos;
 }
 
-function init() {
+function startGame(level) {
+  currentLevel = level;
+  const config = LEVELS[level];
+  speed = config.speed;
+  maxSpeed = config.maxSpeed;
+
   snake = [
     { x: 10, y: 10 },
     { x: 9, y: 10 },
@@ -103,7 +205,6 @@ function init() {
   nextDir = { x: 1, y: 0 };
   apple = newApple();
   score = 0;
-  speed = BASE_SPEED;
   scoreEl.textContent = 0;
   running = true;
   lastTime = null;
@@ -134,7 +235,7 @@ function step() {
     score += 10;
     scoreEl.textContent = score;
     if (score > best) { best = score; bestEl.textContent = best; }
-    speed = Math.max(60, BASE_SPEED - Math.floor(score / 50) * 10);
+    speed = Math.max(maxSpeed, speed - 2);
     apple = newApple();
   } else {
     snake.pop();
@@ -144,49 +245,87 @@ function step() {
 function die() {
   running = false;
   overlayTitle.textContent = 'انتهت اللعبة!';
+  const levels = ['easy', 'medium', 'hard'];
+  const nextIdx = levels.indexOf(currentLevel) + 1;
+
+  levelSelect.innerHTML = '';
+  const restartBtn = document.createElement('button');
+  restartBtn.className = 'level-btn';
+  restartBtn.textContent = 'حاول مرة أخرى';
+  restartBtn.onclick = () => startGame(currentLevel);
+  levelSelect.appendChild(restartBtn);
+
+  if (nextIdx < 3) {
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'level-btn';
+    nextBtn.textContent = 'المرحلة التالية ⬆️';
+    nextBtn.onclick = () => startGame(levels[nextIdx]);
+    levelSelect.appendChild(nextBtn);
+  }
+
   overlay.classList.remove('hidden');
-  overlay.querySelector('p:last-of-type').textContent = 'اضغط Space أو Enter للمحاولة مجدداً';
+  overlay.querySelector('.hint').textContent = 'اضغط Space للمحاولة مجدداً';
 }
 
-function drawCell(x, y, color, radius = 4) {
-  const px = x * CELL + 1;
-  const py = y * CELL + 1;
-  const s = CELL - 2;
-  ctx.fillStyle = color;
+function drawCircle(x, y, r, fillColor) {
+  ctx.fillStyle = fillColor;
   ctx.beginPath();
-  ctx.roundRect(px, py, s, s, radius);
+  ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fill();
 }
 
 function draw() {
-  ctx.fillStyle = '#0f0f1a';
+  ctx.fillStyle = COLORS.bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.strokeStyle = '#1e293b';
+  ctx.strokeStyle = COLORS.grid;
   ctx.lineWidth = 0.5;
   for (let i = 0; i <= COLS; i++) {
-    ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, canvas.height); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(canvas.width, i * CELL); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(i * CELL, 0);
+    ctx.lineTo(i * CELL, canvas.height);
+    ctx.stroke();
+  }
+  for (let i = 0; i <= ROWS; i++) {
+    ctx.beginPath();
+    ctx.moveTo(0, i * CELL);
+    ctx.lineTo(canvas.width, i * CELL);
+    ctx.stroke();
   }
 
   snake.forEach((s, i) => {
-    const ratio = 1 - i / snake.length;
-    const g = Math.floor(100 + ratio * 118);
-    drawCell(s.x, s.y, i === 0 ? '#86efac' : `rgb(30,${g},60)`);
+    const cx = s.x * CELL + CELL / 2;
+    const cy = s.y * CELL + CELL / 2;
+    const r = CELL / 2.2;
+
+    if (i === 0) {
+      drawCircle(cx, cy, r, COLORS.snakeHead);
+      ctx.strokeStyle = COLORS.snakeTail;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    } else {
+      const ratio = 1 - (i / snake.length);
+      const g = Math.floor(107 + ratio * 45);
+      drawCircle(cx, cy, r * 0.95, `rgb(107, ${g}, 150)`);
+    }
   });
 
   const ax = apple.x * CELL + CELL / 2;
   const ay = apple.y * CELL + CELL / 2;
-  const r = (CELL - 4) / 2;
-  const grad = ctx.createRadialGradient(ax - 3, ay - 3, 1, ax, ay, r);
-  grad.addColorStop(0, '#fca5a5');
-  grad.addColorStop(1, '#dc2626');
-  ctx.fillStyle = grad;
+  const ar = CELL / 2.5;
+
+  const grad = ctx.createRadialGradient(ax - 3, ay - 3, 2, ax, ay, ar);
+  grad.addColorStop(0, '#ffc9c0');
+  grad.addColorStop(1, COLORS.apple);
+  drawCircle(ax, ay, ar, grad);
+
+  ctx.fillStyle = COLORS.appleDark;
+  ctx.fillRect(ax - 1.5, ay - ar - 5, 3, 7);
+  ctx.fillStyle = '#8b6f47';
+  const leafSize = 3;
   ctx.beginPath();
-  ctx.arc(ax, ay, r, 0, Math.PI * 2);
+  ctx.ellipse(ax + 5, ay - ar - 2, leafSize, leafSize * 1.5, 0.3, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#854d0e';
-  ctx.fillRect(ax - 1, ay - r - 4, 2, 5);
 }
 
 const DIRS = {
@@ -196,14 +335,30 @@ const DIRS = {
   a: { x: -1, y: 0 }, d: { x: 1, y: 0 }
 };
 
+levelSelect.addEventListener('click', e => {
+  if (e.target.dataset.level) {
+    startGame(e.target.dataset.level);
+  }
+});
+
 document.addEventListener('keydown', e => {
-  if ((e.key === ' ' || e.key === 'Enter') && !running) { init(); return; }
+  if (e.key === ' ' || e.key === 'Enter') {
+    if (!running && !overlay.classList.contains('hidden')) {
+      e.preventDefault();
+      const firstBtn = levelSelect.querySelector('button');
+      if (firstBtn) firstBtn.click();
+    }
+  }
   const d = DIRS[e.key];
-  if (d && !(d.x === -dir.x && d.y === -dir.y)) {
+  if (d && running && !(d.x === -dir.x && d.y === -dir.y)) {
     nextDir = d;
     e.preventDefault();
   }
 });
+
+if (!best) best = 0;
+bestEl.textContent = best;
+overlay.classList.remove('hidden');
 </script>
 </body>
 </html>
